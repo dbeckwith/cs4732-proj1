@@ -4,9 +4,11 @@
 import sys
 import math
 
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt3DCore, Qt3DRender, Qt3DExtras
+from PyQt5.QtGui import QVector3D
+from PyQt5.QtWidgets import QApplication
 
 from .animation import Animation
+from .quaternion import Quaternion
 from . import util
 
 
@@ -20,8 +22,8 @@ class Proj1Ani(Animation):
 
         self.setup_scene(
             background_color=util.hsl(0, 0, 0),
-            camera_position=QtGui.QVector3D(0.0, 0.0, -10.0),
-            camera_lookat=QtGui.QVector3D(0.0, 0.0, 0.0))
+            camera_position=QVector3D(0.0, 0.0, -10.0),
+            camera_lookat=QVector3D(0.0, 0.0, 0.0))
 
     def make_scene(self):
         pass
@@ -37,7 +39,7 @@ if __name__ == '__main__':
         epilog='Created by Daniel Beckwith for WPI CS 4732.')
     args = parser.parse_args()
 
-    app = QtWidgets.QApplication([])
+    app = QApplication([])
 
     ani = Proj1Ani(60, 10.0)
     ani.run()

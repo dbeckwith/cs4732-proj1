@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt3DCore, Qt3DRender, Qt3DExtras
+from PyQt5.QtCore import QTimer
+from PyQt5.Qt3DCore import QEntity, QTransform
+from PyQt5.Qt3DRender import QPointLight
+from PyQt5.Qt3DExtras import Qt3DWindow
 
 from . import util
 
@@ -31,7 +34,7 @@ class Animation(object):
         # import OpenGL so Qt can use it for rendering
         from OpenGL import GL
         # create the 3D window
-        self.view = Qt3DExtras.Qt3DWindow()
+        self.view = Qt3DWindow()
 
         self.view.setTitle(self.title)
 
@@ -44,11 +47,11 @@ class Animation(object):
             intensity: float, the intensity of the light
             color: QColor, the color of the light
         """
-        light_entity = Qt3DCore.QEntity(self.scene)
-        light = Qt3DRender.QPointLight(light_entity)
+        light_entity = QEntity(self.scene)
+        light = QPointLight(light_entity)
         light.setColor(color)
         light.setIntensity(intensity)
-        light_transform = Qt3DCore.QTransform()
+        light_transform = QTransform()
         light_transform.setTranslation(position)
         light_entity.addComponent(light)
         light_entity.addComponent(light_transform)
@@ -65,7 +68,7 @@ class Animation(object):
         # clear color is the background color
         self.view.defaultFrameGraph().setClearColor(background_color)
 
-        self.scene = Qt3DCore.QEntity()
+        self.scene = QEntity()
 
         # let subclass populate scene
         self.make_scene()
@@ -117,7 +120,7 @@ class Animation(object):
         """
         Runs the animation asynchronously. The animation runs in the background for self.run_time seconds.
         """
-        self.animation_timer = QtCore.QTimer(self.view)
+        self.animation_timer = QTimer(self.view)
         # timer interval in msecs
         self.animation_timer.setInterval(1000 / self.frame_rate)
         # call update on each timeout of the timer
