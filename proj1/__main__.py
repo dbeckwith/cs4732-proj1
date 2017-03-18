@@ -3,6 +3,7 @@
 
 import sys
 import math
+import itertools
 
 from PyQt5.QtGui import QVector3D
 from PyQt5.QtWidgets import QApplication
@@ -20,21 +21,50 @@ class Proj1Ani(Animation):
     """
 
     def __init__(self, spline_spec_path):
-        self.splines = read_spline_spec(spline_spec_path, CatmullRomSpline)
-        run_time = 10.0
+        self.splines, self.rotations = read_spline_spec(spline_spec_path)
+        total_time = sum(spline.ani_time for spline in self.splines)
 
-        super().__init__('CS 4732 Project 1 by Daniel Beckwith', 60.0, run_time)
+        super().__init__('CS 4732 Project 1 by Daniel Beckwith', 60.0, total_time)
 
         self.setup_scene(
             background_color=util.hsl(0, 0, 0),
             camera_position=QVector3D(0.0, 0.0, -10.0),
             camera_lookat=QVector3D(0.0, 0.0, 0.0))
 
+        self.spline_end_times = itertools.accumulate(spline.ani_time for spline in self.splines)
+        self.splines = iter(self.splines)
+        self.curr_spline = None
+        self.curr_spline_start_time = None
+        self.curr_spline_end_time = None
+        self._next_spline()
+
+    def _next_spline(self):
+        try:
+            self.curr_spline = next(self.splines)
+            if self.curr_spline_end_time is None:
+                self.curr_spline_start_time = 0
+            else:
+                self.curr_spline_start_time = self.curr_spline_end_time
+            self.curr_spline_end_time = next(self.spline_end_times)
+            # TODO: set up spline-specific scene elements
+        except StopIteration:
+            self.curr_spline = None
+            self.curr_spline_end_time = None
+
+    def _slerp_rot(self, t):
+        # TODO: slerp rotations
+        pass
+
     def make_scene(self):
         pass
 
     def update(self, frame, t, dt):
-        pass
+        spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
+        pos = self.curr_spline.pos_at(spline_t)
+        rot = self._slerp_rot(spline_t)
+        # TODO: update object
+        if t >= self.curr_spline_end_time:
+            self._next_spline()
 
 if __name__ == '__main__':
     import argparse
