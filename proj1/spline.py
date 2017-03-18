@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-from collections import defaultdict
-
 from PyQt5.QtGui import QVector3D
 
 from .quaternion import Quaternion

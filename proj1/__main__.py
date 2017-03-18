@@ -38,6 +38,9 @@ class Proj1Ani(Animation):
         self.curr_spline_end_time = None
         self._next_spline()
 
+    def make_scene(self):
+        self.cube_transform = self.add_rgb_cube(1.0, 1.0, 1.0)
+
     def _next_spline(self):
         try:
             self.curr_spline = next(self.splines)
@@ -48,25 +51,19 @@ class Proj1Ani(Animation):
             self.curr_spline_end_time = next(self.spline_end_times)
         except StopIteration:
             self.curr_spline = None
+            self.curr_spline_start_time = None
             self.curr_spline_end_time = None
-
-    def _slerp_rot(self, t):
-        # TODO: slerp rotations
-        return  Quaternion.from_euler_angles(
-            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 90 * math.pi / 180),
-            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 70 * math.pi / 180),
-            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 50 * math.pi / 180))
-
-    def make_scene(self):
-        self.cube_transform = self.add_rgb_cube(1.0, 1.0, 1.0)
 
     def update(self, frame, t, dt):
         spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
+
         pos = self.curr_spline.pos_at(spline_t)
-        rot = self._slerp_rot(spline_t)
+        rot = Quaternion.slerp(self.rotations, spline_t)
+
         xform = QMatrix4x4(rot.mat4x4)
         xform.translate(pos)
         self.cube_transform.setMatrix(xform)
+
         if t >= self.curr_spline_end_time:
             self._next_spline()
 

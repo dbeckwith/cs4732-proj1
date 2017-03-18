@@ -7,6 +7,11 @@ from PyQt5.QtGui import QVector3D, QMatrix3x3, QMatrix4x4
 
 
 class Quaternion(object):
+    @staticmethod
+    def slerp(rotations, t):
+        # TODO: slerp rotations
+        return Quaternion()
+
     def __init__(self, s=1, x=0, y=0, z=0):
         self.s = s
         self.x = x
