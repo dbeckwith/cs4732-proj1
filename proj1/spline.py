@@ -39,7 +39,7 @@ def read_spec(path):
             splines = []
             for spline_type in (CatmullRomSpline, UniformBSpline):
                 splines.append(spline_type(ani_time, *ctrl_pts))
-                
+
             return splines, rotations
 
 class Spline(object):
@@ -53,9 +53,9 @@ class Spline(object):
 class CatmullRomSpline(Spline):
     def pos_at(self, t):
         # TODO: catmull-rom spline
-        pass
+        return QVector3D(0.0, 0.0, 0.0)
 
 class UniformBSpline(Spline):
     def pos_at(self, t):
         # TODO: uniform b-spline
-        pass
+        return QVector3D(0.0, 0.0, 0.0)

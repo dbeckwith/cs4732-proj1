@@ -5,7 +5,7 @@ import sys
 import math
 import itertools
 
-from PyQt5.QtGui import QVector3D
+from PyQt5.QtGui import QVector3D, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from .animation import Animation
@@ -46,23 +46,27 @@ class Proj1Ani(Animation):
             else:
                 self.curr_spline_start_time = self.curr_spline_end_time
             self.curr_spline_end_time = next(self.spline_end_times)
-            # TODO: set up spline-specific scene elements
         except StopIteration:
             self.curr_spline = None
             self.curr_spline_end_time = None
 
     def _slerp_rot(self, t):
         # TODO: slerp rotations
-        pass
+        return  Quaternion.from_euler_angles(
+            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 90 * math.pi / 180),
+            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 70 * math.pi / 180),
+            util.lerp(t, 0, 1 / self.curr_spline.ani_time, 0, 50 * math.pi / 180))
 
     def make_scene(self):
-        pass
+        self.cube_transform = self.add_rgb_cube(1.0, 1.0, 1.0)
 
     def update(self, frame, t, dt):
         spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
         pos = self.curr_spline.pos_at(spline_t)
         rot = self._slerp_rot(spline_t)
-        # TODO: update object
+        xform = QMatrix4x4(rot.mat4x4)
+        xform.translate(pos)
+        self.cube_transform.setMatrix(xform)
         if t >= self.curr_spline_end_time:
             self._next_spline()
 

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os.path
+
 from PyQt5.QtCore import QTimer
 from PyQt5.Qt3DCore import QEntity, QTransform
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.Qt3DExtras import Qt3DWindow
+from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh
+from PyQt5.QtQml import QQmlComponent, QQmlEngine
 
 from . import util
 
@@ -38,6 +41,18 @@ class Animation(object):
 
         self.view.setTitle(self.title)
 
+        self.qml_engine = QQmlEngine(self.view)
+
+    def load_qml(self, path, parent):
+        component = QQmlComponent(self.qml_engine, path, parent)
+        obj = component.create()
+        if obj is None:
+            print('Error loading {}'.format(path))
+            for error in component.errors():
+                print(error.toString())
+            exit()
+        return obj
+
     def add_light(self, position, intensity=1.0, color=util.hsl(0, 0, 100)):
         """
         Helper method to add a simple point light to the scene.
@@ -51,10 +66,25 @@ class Animation(object):
         light = QPointLight(light_entity)
         light.setColor(color)
         light.setIntensity(intensity)
-        light_transform = QTransform()
+        light_transform = QTransform(self.scene)
         light_transform.setTranslation(position)
         light_entity.addComponent(light)
         light_entity.addComponent(light_transform)
+
+    def add_rgb_cube(self, w, h, d):
+        cube_entity = QEntity(self.scene)
+        cube_mesh = QCuboidMesh()
+        cube_mesh.setXExtent(w)
+        cube_mesh.setYExtent(h)
+        cube_mesh.setZExtent(d)
+        cube_entity.addComponent(cube_mesh)
+        cube_transform = QTransform(self.scene)
+        cube_entity.addComponent(cube_transform)
+        if not hasattr(self, 'rgb_cube_material'):
+            self.rgb_cube_material = self.load_qml(os.path.join(os.path.dirname(__file__), 'RGBCubeMaterial.qml'), self.scene)
+        cube_entity.addComponent(self.rgb_cube_material)
+
+        return cube_transform
 
     def setup_scene(self, background_color, camera_position, camera_lookat):
         """

@@ -99,10 +99,12 @@ class Quaternion(object):
         q_i = self.x
         q_j = self.y
         q_k = self.z
-        return QMatrix3x3(
+        m = QMatrix3x3(
             1 - 2 * (q_j * q_j + q_k * q_k),     2 * (q_i * q_j - q_k * q_r),     2 * (q_i * q_k + q_j * q_r),
                 2 * (q_i * q_j + q_k * q_r), 1 - 2 * (q_i * q_i + q_k * q_k),     2 * (q_j * q_k - q_i * q_r),
                 2 * (q_i * q_k - q_j * q_r),     2 * (q_j * q_k + q_i * q_r), 1 - 2 * (q_i * q_i + q_j * q_j))
+        m.optimize()
+        return m
 
     @property
     def mat4x4(self):
@@ -111,11 +113,13 @@ class Quaternion(object):
         q_i = self.x
         q_j = self.y
         q_k = self.z
-        return QMatrix4x4(
+        m = QMatrix4x4(
             1 - 2 * (q_j * q_j + q_k * q_k),     2 * (q_i * q_j - q_k * q_r),     2 * (q_i * q_k + q_j * q_r), 0,
                 2 * (q_i * q_j + q_k * q_r), 1 - 2 * (q_i * q_i + q_k * q_k),     2 * (q_j * q_k - q_i * q_r), 0,
                 2 * (q_i * q_k - q_j * q_r),     2 * (q_j * q_k + q_i * q_r), 1 - 2 * (q_i * q_i + q_j * q_j), 0,
                                           0,                               0,                               0, 1)
+        m.optimize()
+        return m
 
     def __str__(self):
         return '<' + str(self.s) + ', (' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')>'
