@@ -118,7 +118,12 @@ class Quaternion(object):
                                           0,                               0,                               0, 1)
 
     def __str__(self):
-        return '[' + str(self.s) + ', (' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')]'
+        return '<' + str(self.s) + ', (' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')>'
 
     def __repr__(self):
         return 'Quaternion(' + repr(self.s) + ', ' + repr(self.x) + ', ' + repr(self.y) + ', ' + repr(self.z) + ')'
+
+
+if __name__ == '__main__':
+    # TODO: unit tests
+    exit(0)
