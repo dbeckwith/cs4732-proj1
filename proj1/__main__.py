@@ -15,6 +15,12 @@ from .spline import CatmullRomSpline, UniformBSpline
 from . import util
 
 
+# QUESTIONS:
+# need to do rotation bezier smoothing?
+# need to do automatic tangents for Catmull-Rom spline?
+# need to do distance-based interpolation?
+
+
 class Proj1Ani(Animation):
     """
     Implements the spline animation.
@@ -26,6 +32,7 @@ class Proj1Ani(Animation):
 
         super().__init__('CS 4732 Project 1 by Daniel Beckwith', 60.0, total_time)
 
+        # TODO: position camera to include all spline points
         self.setup_scene(
             background_color=util.hsl(0, 0, 0),
             camera_position=QVector3D(0.0, 0.0, -10.0),
