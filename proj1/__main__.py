@@ -16,7 +16,6 @@ from . import util
 
 
 # QUESTIONS:
-# need to do rotation bezier smoothing?
 # need to do automatic tangents for Catmull-Rom spline?
 # need to do distance-based interpolation?
 

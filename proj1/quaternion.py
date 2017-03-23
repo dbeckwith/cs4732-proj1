@@ -12,13 +12,22 @@ class Quaternion(object):
         assert len(rotations) >= 2
         if len(rotations) == 2:
             q1, q2 = rotations
-            if t == 0.5:
-                return (q1 + q2).normalized
-            angle = math.acos(q1.dot(q2))
-            sin_angle = math.sin(angle)
-            if sin_angle == 0.0:
+            dot = q1.dot(q2)
+            if dot == 1.0 or dot == -1.0:
+                # quaternions are the same, no interpolation possible
                 return q1
-            return (math.sin((1 - t) * angle) / sin_angle * q1 + math.sin(t * angle) / sin_angle * q2).normalized
+            elif dot < 0:
+                # -q2 and q2 represent the same rotation,
+                # so if -q2 is closer to q1, use that
+                # they are closer if q1 faces away from q2,
+                # meaning their dot product is negative
+                q2 = -q2
+                dot = -dot
+            if t == 0.5:
+                # simple formula for case when t is 1/2
+                return (q1 + q2).normalized
+            angle = math.acos(dot)
+            return (math.sin((1 - t) * angle) * q1 + math.sin(t * angle) * q2) / math.sin(angle)
         else:
             if t < 0:
                 return rotations[0]
