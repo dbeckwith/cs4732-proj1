@@ -58,7 +58,7 @@ class Proj1Ani(Animation):
         spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
 
         pos = self.curr_spline.pos_at(spline_t)
-        rot = Quaternion.slerp(self.rotations, spline_t)
+        rot = Quaternion.slerp(spline_t, *self.rotations)
 
         xform = QMatrix4x4(rot.mat4x4)
         xform.translate(pos)

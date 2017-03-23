@@ -8,9 +8,25 @@ from PyQt5.QtGui import QVector3D, QMatrix3x3, QMatrix4x4
 
 class Quaternion(object):
     @staticmethod
-    def slerp(rotations, t):
-        # TODO: slerp rotations
-        return Quaternion()
+    def slerp(t, *rotations):
+        assert len(rotations) >= 2
+        if len(rotations) == 2:
+            q1, q2 = rotations
+            if t == 0.5:
+                return (q1 + q2).normalized
+            angle = math.acos(q1.dot(q2))
+            sin_angle = math.sin(angle)
+            if sin_angle == 0.0:
+                return q1
+            return (math.sin((1 - t) * angle) / sin_angle * q1 + math.sin(t * angle) / sin_angle * q2).normalized
+        else:
+            if t < 0:
+                return rotations[0]
+            if t >= 1:
+                return rotations[-1]
+            i, t = divmod(t * (len(rotations) - 1), 1)
+            i = int(i)
+            return Quaternion.slerp(t, rotations[i], rotations[i + 1])
 
     def __init__(self, s=1, x=0, y=0, z=0):
         self.s = s
@@ -75,6 +91,14 @@ class Quaternion(object):
                 self.s * other.y + other.s * self.y + self.z * other.x - self.x * other.z,
                 self.s * other.z + other.s * self.z + self.x * other.y - self.y * other.x)
 
+    def __rmul__(self, other):
+        if isinstance(other, numbers.Number):
+            return Quaternion(other * self.s, other * self.x, other * self.y, other * self.z)
+        return NotImplemented
+
+    def dot(self, other):
+        return self.s * other.s + self.x * other.x + self.y * other.y + self.z * other.z
+
     @property
     def conjugate(self):
         return Quaternion(self.s, -self.x, -self.y, -self.z)
@@ -86,6 +110,10 @@ class Quaternion(object):
     @property
     def norm(self):
         return math.sqrt(self.normsq)
+
+    @property
+    def normalized(self):
+        return self / self.norm
 
     @property
     def reciprocal(self):
@@ -100,29 +128,29 @@ class Quaternion(object):
     @property
     def mat3x3(self):
         # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        q_r = self.s
-        q_i = self.x
-        q_j = self.y
-        q_k = self.z
+        s = self.s
+        x = self.x
+        y = self.y
+        z = self.z
         m = QMatrix3x3(
-            1 - 2 * (q_j * q_j + q_k * q_k),     2 * (q_i * q_j - q_k * q_r),     2 * (q_i * q_k + q_j * q_r),
-                2 * (q_i * q_j + q_k * q_r), 1 - 2 * (q_i * q_i + q_k * q_k),     2 * (q_j * q_k - q_i * q_r),
-                2 * (q_i * q_k - q_j * q_r),     2 * (q_j * q_k + q_i * q_r), 1 - 2 * (q_i * q_i + q_j * q_j))
+            1 - 2 * (y * y + z * z),     2 * (x * y - s * z),     2 * (x * z + s * y),
+                2 * (x * y + s * z), 1 - 2 * (x * x + z * z),     2 * (y * z - s * x),
+                2 * (x * z - s * y),     2 * (y * z + s * x), 1 - 2 * (x * x + y * y))
         m.optimize()
         return m
 
     @property
     def mat4x4(self):
         # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        q_r = self.s
-        q_i = self.x
-        q_j = self.y
-        q_k = self.z
+        s = self.s
+        x = self.x
+        y = self.y
+        z = self.z
         m = QMatrix4x4(
-            1 - 2 * (q_j * q_j + q_k * q_k),     2 * (q_i * q_j - q_k * q_r),     2 * (q_i * q_k + q_j * q_r), 0,
-                2 * (q_i * q_j + q_k * q_r), 1 - 2 * (q_i * q_i + q_k * q_k),     2 * (q_j * q_k - q_i * q_r), 0,
-                2 * (q_i * q_k - q_j * q_r),     2 * (q_j * q_k + q_i * q_r), 1 - 2 * (q_i * q_i + q_j * q_j), 0,
-                                          0,                               0,                               0, 1)
+            1 - 2 * (y * y + z * z),     2 * (x * y - s * z),     2 * (x * z + s * y), 0,
+                2 * (x * y + s * z), 1 - 2 * (x * x + z * z),     2 * (y * z - s * x), 0,
+                2 * (x * z - s * y),     2 * (y * z + s * x), 1 - 2 * (x * x + y * y), 0,
+                                  0,                       0,                       0, 1)
         m.optimize()
         return m
 
