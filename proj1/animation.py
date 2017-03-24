@@ -5,7 +5,7 @@ import os.path
 from PyQt5.QtCore import QTimer
 from PyQt5.Qt3DCore import QEntity, QTransform
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh
+from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QPhongMaterial
 from PyQt5.QtQml import QQmlComponent, QQmlEngine
 
 from . import util
@@ -85,6 +85,20 @@ class Animation(object):
         cube_entity.addComponent(self.rgb_cube_material)
 
         return cube_transform
+
+    def add_sphere(self, r):
+        sphere_entity = QEntity(self.scene)
+        sphere_mesh = QSphereMesh()
+        sphere_mesh.setRadius(r)
+        sphere_entity.addComponent(sphere_mesh)
+        sphere_transform = QTransform(self.scene)
+        sphere_entity.addComponent(sphere_transform)
+        if not hasattr(self, 'sphere_material'):
+            self.sphere_material = QPhongMaterial(self.scene)
+            self.sphere_material.setAmbient(util.hsl(0, 0, 50))
+        sphere_entity.addComponent(self.sphere_material)
+
+        return sphere_transform
 
     def setup_scene(self, background_color, camera_position, camera_lookat):
         """

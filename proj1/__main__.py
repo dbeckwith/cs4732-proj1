@@ -15,11 +15,6 @@ from .spline import CatmullRomSpline, UniformBSpline
 from . import util
 
 
-# QUESTIONS:
-# need to do automatic tangents for Catmull-Rom spline?
-# need to do distance-based interpolation?
-
-
 class Proj1Ani(Animation):
     """
     Implements the spline animation.
@@ -31,11 +26,29 @@ class Proj1Ani(Animation):
 
         super().__init__('CS 4732 Project 1 by Daniel Beckwith', 60.0, total_time)
 
-        # TODO: position camera to include all spline points
+        self.pts = self.splines[0].ctrl_pts
+        spline_min = QVector3D(float('+inf'), float('+inf'), float('+inf'))
+        spline_max = QVector3D(float('-inf'), float('-inf'), float('-inf'))
+        for p in self.pts:
+            if p.x() < spline_min.x():
+                spline_min.setX(p.x())
+            if p.x() > spline_max.x():
+                spline_max.setX(p.x())
+            if p.y() < spline_min.y():
+                spline_min.setY(p.y())
+            if p.y() > spline_max.y():
+                spline_max.setY(p.y())
+            if p.z() < spline_min.z():
+                spline_min.setZ(p.z())
+            if p.z() > spline_max.z():
+                spline_max.setZ(p.z())
+        spline_center = (spline_min + spline_max) / 2
+        spline_extent = (spline_max - spline_min).length()
+
         self.setup_scene(
             background_color=util.hsl(0, 0, 0),
-            camera_position=QVector3D(0.0, 0.0, -10.0),
-            camera_lookat=QVector3D(0.0, 0.0, 0.0))
+            camera_position=spline_center + QVector3D(0.0, 0.0, -2.5 * spline_extent),
+            camera_lookat=spline_center)
 
         self.spline_end_times = itertools.accumulate(spline.ani_time for spline in self.splines)
         self.splines = iter(self.splines)
@@ -46,6 +59,13 @@ class Proj1Ani(Animation):
 
     def make_scene(self):
         self.cube_transform = self.add_rgb_cube(1.0, 1.0, 1.0)
+        for p in self.pts:
+            xform = self.add_sphere(0.2)
+            xform.setTranslation(p)
+
+        # add some lights
+        self.add_light(QVector3D(-20.0, 20.0, -20.0), 1.0) # upper right key light
+        self.add_light(QVector3D(20.0, 10.0, -20.0), 0.5) # upper left fill light
 
     def _next_spline(self):
         try:
