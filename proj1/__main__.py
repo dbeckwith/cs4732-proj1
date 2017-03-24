@@ -55,6 +55,7 @@ class Proj1Ani(Animation):
         self.curr_spline = None
         self.curr_spline_start_time = None
         self.curr_spline_end_time = None
+        self.spline_path = None
         self._next_spline()
 
     def make_scene(self):
@@ -75,23 +76,31 @@ class Proj1Ani(Animation):
             else:
                 self.curr_spline_start_time = self.curr_spline_end_time
             self.curr_spline_end_time = next(self.spline_end_times)
+
+            if self.spline_path is not None:
+                for p in self.spline_path:
+                    p.setParent(None)
+            self.spline_path = self.add_path(*(self.curr_spline.pos_at(t / (self.curr_spline_end_time * self.frame_rate)) for t in range(int(self.curr_spline_end_time * self.frame_rate))))
         except StopIteration:
             self.curr_spline = None
             self.curr_spline_start_time = None
             self.curr_spline_end_time = None
 
     def update(self, frame, t, dt):
-        spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
-
-        pos = self.curr_spline.pos_at(spline_t)
-        rot = Quaternion.slerp(spline_t, *self.rotations)
-
-        xform = QMatrix4x4(rot.mat4x4)
-        xform.translate(pos)
-        self.cube_transform.setMatrix(xform)
-
         if t >= self.curr_spline_end_time:
             self._next_spline()
+
+        if self.curr_spline is not None:
+            spline_t = util.lerp(t, self.curr_spline_start_time, self.curr_spline_end_time, 0, 1)
+
+            pos = self.curr_spline.pos_at(spline_t)
+            rot = Quaternion.slerp(spline_t, *self.rotations)
+
+            xform = QMatrix4x4(rot.mat4x4)
+            xform[0, 3] = pos.x()
+            xform[1, 3] = pos.y()
+            xform[2, 3] = pos.z()
+            self.cube_transform.setMatrix(xform)
 
 if __name__ == '__main__':
     import argparse

@@ -3,9 +3,10 @@
 import os.path
 
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QVector3D, QQuaternion
 from PyQt5.Qt3DCore import QEntity, QTransform
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QPhongMaterial
+from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QCylinderMesh, QPhongMaterial
 from PyQt5.QtQml import QQmlComponent, QQmlEngine
 
 from . import util
@@ -99,6 +100,29 @@ class Animation(object):
         sphere_entity.addComponent(self.sphere_material)
 
         return sphere_transform
+
+    def add_path(self, *pts):
+        entities = []
+        prev_pt = None
+        for pt in pts:
+            if prev_pt is not None:
+                if prev_pt != pt:
+                    path_entity = QEntity(self.scene)
+                    path_mesh = QCylinderMesh()
+                    path_mesh.setRadius(0.05)
+                    path_mesh.setLength((prev_pt - pt).length())
+                    path_entity.addComponent(path_mesh)
+                    path_transform = QTransform(self.scene)
+                    path_transform.setRotation(QQuaternion.fromDirection(QVector3D(0, 0, -1), prev_pt - pt))
+                    path_transform.setTranslation((pt + prev_pt) / 2)
+                    path_entity.addComponent(path_transform)
+                    if not hasattr(self, 'path_material'):
+                        self.path_material = QPhongMaterial(self.scene)
+                        self.path_material.setAmbient(util.hsl(0, 0, 50))
+                    path_entity.addComponent(self.path_material)
+                    entities.append(path_entity)
+            prev_pt = pt
+        return entities
 
     def setup_scene(self, background_color, camera_position, camera_lookat):
         """
