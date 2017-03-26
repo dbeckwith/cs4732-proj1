@@ -27,3 +27,5 @@ From the project root, run the python module with the help option to see its usa
 ```bash
 python -m proj1 --help
 ```
+
+An example of the spline specification file is given in [splines.txt](splines.txt).
