@@ -39,12 +39,24 @@ class Animation(object):
         from OpenGL import GL
         # create the 3D window
         self.view = Qt3DWindow()
+        self.view.setX(100)
+        self.view.setY(100)
 
         self.view.setTitle(self.title)
 
         self.qml_engine = QQmlEngine(self.view)
 
     def load_qml(self, path, parent):
+        """
+        Helper method to load an object using Qt's QML system.
+
+        Arguments:
+            path: str, a path to a QML file
+            parent: QObject, the parent of the object to be loaded
+
+        Returns:
+            the loaded QObject
+        """
         component = QQmlComponent(self.qml_engine, path, parent)
         obj = component.create()
         if obj is None:
@@ -73,6 +85,17 @@ class Animation(object):
         light_entity.addComponent(light_transform)
 
     def add_rgb_cube(self, w, h, d):
+        """
+        Helper method to add an RGB-textured cube to the scene.
+
+        Arguments:
+            w: float, the width of the cube
+            h: float, the height of the cube
+            d: float, the depth of the cube
+
+        Returns:
+            the QTransform of the cube
+        """
         cube_entity = QEntity(self.scene)
         cube_mesh = QCuboidMesh()
         cube_mesh.setXExtent(w)
@@ -82,12 +105,23 @@ class Animation(object):
         cube_transform = QTransform(self.scene)
         cube_entity.addComponent(cube_transform)
         if not hasattr(self, 'rgb_cube_material'):
+            # load material definition from QML
+            # this was the easiest way I could find to create a custom shader in Qt3D...
             self.rgb_cube_material = self.load_qml(os.path.join(os.path.dirname(__file__), 'RGBCubeMaterial.qml'), self.scene)
         cube_entity.addComponent(self.rgb_cube_material)
 
         return cube_transform
 
     def add_sphere(self, r):
+        """
+        Helper method to add a sphere to the scene.
+
+        Arguments:
+            r: float, the radius of the sphere
+
+        Returns:
+            the QTransform of the sphere
+        """
         sphere_entity = QEntity(self.scene)
         sphere_mesh = QSphereMesh()
         sphere_mesh.setRadius(r)
@@ -102,19 +136,31 @@ class Animation(object):
         return sphere_transform
 
     def add_path(self, *pts):
+        """
+        Helper method to add a path to the scene.
+
+        Arguments:
+            pts: list of QVector3D's, the points in the path
+
+        Returns:
+            a list of the entities added to the scene
+        """
+        # make a bunch of cylinder objects aligned along the path
         entities = []
         prev_pt = None
         for pt in pts:
             if prev_pt is not None:
                 if prev_pt != pt:
+                    # for each adjacent pair of points that are different
+                    # make a cylinder
                     path_entity = QEntity(self.scene)
                     path_mesh = QCylinderMesh()
-                    path_mesh.setRadius(0.05)
-                    path_mesh.setLength((prev_pt - pt).length())
+                    path_mesh.setRadius(0.05) # very thin
+                    path_mesh.setLength((prev_pt - pt).length()) # length is the distance between the points
                     path_entity.addComponent(path_mesh)
                     path_transform = QTransform(self.scene)
-                    path_transform.setRotation(QQuaternion.fromDirection(QVector3D(0, 0, -1), prev_pt - pt))
-                    path_transform.setTranslation((pt + prev_pt) / 2)
+                    path_transform.setRotation(QQuaternion.fromDirection(QVector3D(0, 0, -1), prev_pt - pt)) # rotate to point along path
+                    path_transform.setTranslation((pt + prev_pt) / 2) # center between points
                     path_entity.addComponent(path_transform)
                     if not hasattr(self, 'path_material'):
                         self.path_material = QPhongMaterial(self.scene)

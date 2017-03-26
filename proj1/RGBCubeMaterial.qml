@@ -1,6 +1,8 @@
 import Qt3D.Core 2.0
 import Qt3D.Render 2.0
 
+// material for an RGB cube
+
 Material {
     effect: Effect {
         techniques: [
@@ -12,6 +14,7 @@ Material {
                         value: "forward"
                     }
                 ]
+                // only works in OpenGL 3.1
                 graphicsApiFilter {
                     api: GraphicsApiFilter.OpenGL
                     profile: GraphicsApiFilter.CoreProfile
@@ -20,6 +23,7 @@ Material {
                 }
                 renderPasses: RenderPass {
                     shaderProgram: ShaderProgram {
+                        // use custom shaders
                         vertexShaderCode: loadSource("file:proj1/rgb_cube.vert")
                         fragmentShaderCode: loadSource("file:proj1/rgb_cube.frag")
                     }
